@@ -1,7 +1,7 @@
 
   # Proyecto de Recetas Completo
 
-  This is a code bundle for Proyecto de Recetas Completo. The original project is available at https://www.figma.com/design/66I0v0tiwqXtX2WhThX8u9/Proyecto-de-Recetas-Completo.
+  This is a code bundle for Proyecto de Recetas Completo. 
 
   ## Running the code
 
