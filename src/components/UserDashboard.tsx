@@ -38,6 +38,7 @@ const categories = [
   'Carnes',
   'Guisos',
   'Sopas',
+  'Otros',
 ];
 
 // Configuración personalizable

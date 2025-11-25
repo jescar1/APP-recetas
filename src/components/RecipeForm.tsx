@@ -36,7 +36,7 @@ interface RecipeFormProps {
   onSuccess: () => void;
 }
 
-const categories = ['Pasta', 'Ensaladas', 'Postres', 'Carnes', 'Guisos', 'Sopas'];
+const categories = ['Pasta', 'Ensaladas', 'Postres', 'Carnes', 'Guisos', 'Sopas', 'Otros'];
 const difficulties = ['Fácil', 'Media', 'Difícil'];
 const units = ['gramos', 'kg', 'litros', 'ml', 'tazas', 'cucharadas', 'cucharaditas', 'unidades', 'pizca'];
 
