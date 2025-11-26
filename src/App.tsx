@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from './components/Login';
 import { UserDashboard } from './components/UserDashboard';
 import { AdminPanel } from './components/AdminPanel';
 import { InitialSetup } from './components/InitialSetup';
+import { ResetPassword } from './components/ResetPassword';
 import { createClient } from '@supabase/supabase-js';
 import { projectId, publicAnonKey } from './utils/supabase/info';
 
@@ -86,21 +88,32 @@ export default function App() {
     );
   }
 
-  if (needsSetup) {
-    return <InitialSetup onComplete={handleSetupComplete} />;
-  }
-
-  if (!user) {
-    return <Login onLogin={handleLogin} />;
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
-      {isAdmin ? (
-        <AdminPanel onLogout={handleLogout} user={user} />
-      ) : (
-        <UserDashboard onLogout={handleLogout} user={user} />
-      )}
-    </div>
+    <Router>
+      <Routes>
+        {/* Ruta de Reset Password - Pública */}
+        <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Rutas protegidas */}
+        {needsSetup ? (
+          <Route path="*" element={<InitialSetup onComplete={handleSetupComplete} />} />
+        ) : !user ? (
+          <Route path="*" element={<Login onLogin={handleLogin} />} />
+        ) : (
+          <Route
+            path="*"
+            element={
+              <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+                {isAdmin ? (
+                  <AdminPanel onLogout={handleLogout} user={user} />
+                ) : (
+                  <UserDashboard onLogout={handleLogout} user={user} />
+                )}
+              </div>
+            }
+          />
+        )}
+      </Routes>
+    </Router>
   );
 }
