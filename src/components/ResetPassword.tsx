@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
-import { Lock, Check, AlertCircle } from 'lucide-react';
-import logo from '../logo.png';
 
 const supabase = createClient(
   `https://${projectId}.supabase.co`,
@@ -15,52 +13,23 @@ export function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [validatingToken, setValidatingToken] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
 
   useEffect(() => {
-    // Extraer y validar el token del hash de la URL
-    const validateToken = async () => {
-      try {
-        // Supabase pone el token en el hash fragment (#)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const type = hashParams.get('type');
-        
-        console.log('Hash params:', { accessToken: accessToken?.substring(0, 20), type });
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const type = hashParams.get('type');
 
-        // Verificar que sea un token de recovery
-        if (type !== 'recovery' || !accessToken) {
-          setError('Enlace inválido o expirado. Por favor, solicita un nuevo enlace de recuperación.');
-          setValidatingToken(false);
-          return;
-        }
-
-        // Verificar la sesión actual
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError || !session) {
-          setError('Sesión inválida. Por favor, solicita un nuevo enlace de recuperación.');
-          setValidatingToken(false);
-          return;
-        }
-
-        setTokenValid(true);
-      } catch (err: any) {
-        console.error('Error validating token:', err);
-        setError('Error al validar el enlace. Por favor, intenta nuevamente.');
-      } finally {
-        setValidatingToken(false);
-      }
-    };
-
-    validateToken();
+    if (type === 'recovery') {
+      setTokenValid(true);
+    } else {
+      setError('El enlace de recuperación es inválido o ha expirado.');
+    }
   }, []);
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden');
       return;
@@ -73,173 +42,57 @@ export function ResetPassword() {
 
     setLoading(true);
 
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      });
+    const { error } = await supabase.auth.updateUser({
+      password: password
+    });
 
-      if (error) throw error;
-
+    if (error) {
+      setError(error.message);
+    } else {
       setSuccess(true);
-      
       setTimeout(() => {
         window.location.href = '/';
       }, 3000);
-    } catch (err: any) {
-      console.error('Error updating password:', err);
-      setError(err.message || 'Error al actualizar la contraseña');
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
-  // Pantalla de carga mientras valida el token
-  if (validatingToken) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 p-4">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Validando enlace...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Pantalla de error si el token no es válido
   if (!tokenValid) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
-              <AlertCircle className="w-10 h-10 text-red-600" />
-            </div>
-            <h1 className="text-gray-900 mb-2 text-2xl font-bold">Enlace Inválido</h1>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
-              {error}
-            </div>
-            
-            <a
-              href="/"
-              className="block w-full text-center bg-gradient-to-r from-orange-500 to-amber-600 text-white py-3 rounded-lg hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg hover:shadow-xl font-semibold"
-            >
-              Volver al inicio
-            </a>
-          </div>
-        </div>
+      <div className="text-center p-12">
+        <h1>{error}</h1>
       </div>
     );
   }
 
-  // Pantalla de éxito
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full mb-4 shadow-lg">
-              <Check className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-gray-900 mb-2 text-2xl font-bold">¡Contraseña Actualizada!</h1>
-            <p className="text-gray-600">
-              Tu contraseña ha sido actualizada exitosamente.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            <p className="text-gray-700 mb-4">
-              Serás redirigido al inicio de sesión en unos segundos...
-            </p>
-            <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Formulario de cambio de contraseña
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 mb-4">
-            <img src={logo} alt="RecetasApp" className="w-full h-full object-contain" />
-          </div>
-          <h1 className="text-gray-900 mb-2 text-2xl font-bold">Nueva Contraseña</h1>
-          <p className="text-gray-600">
-            Ingresa tu nueva contraseña para acceder a tu cuenta
-          </p>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <form onSubmit={handleResetPassword} className="space-y-6">
-            <div>
-              <label htmlFor="password" className="block text-gray-700 mb-2 font-medium">
-                Nueva Contraseña
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Mínimo 6 caracteres</p>
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-gray-700 mb-2 font-medium">
-                Confirmar Contraseña
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-500 to-amber-600 text-white py-3 rounded-lg hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-            >
-              {loading ? 'Actualizando...' : 'Actualizar contraseña'}
-            </button>
-          </form>
-
-          <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-            <a
-              href="/"
-              className="text-orange-600 hover:text-orange-700 font-medium text-sm"
-            >
-              Volver al inicio de sesión
-            </a>
-          </div>
-        </div>
-      </div>
+  return success ? (
+    <div className="text-center p-12">
+      <h1>¡Contraseña actualizada!</h1>
     </div>
+  ) : (
+    <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4 max-w-md mx-auto">
+      <h2>Nueva contraseña</h2>
+
+      <input
+        type="password"
+        placeholder="Nueva contraseña"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+
+      <input
+        type="password"
+        placeholder="Confirmar contraseña"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+      />
+
+      {error && <p className="text-red-500">{error}</p>}
+
+      <button disabled={loading}>
+        {loading ? 'Actualizando...' : 'Actualizar contraseña'}
+      </button>
+    </form>
   );
 }
