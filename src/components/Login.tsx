@@ -284,21 +284,9 @@ export function Login({ onLogin }: LoginProps) {
             </button>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-gray-600 mb-2 text-center text-sm font-medium">
-              Credenciales de prueba:
-            </p>
-            <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-sm">
-              <p className="text-gray-700">
-                <strong>Admin:</strong> admin@recetas.com / admin123
-              </p>
-              <p className="text-gray-700">
-                <strong>Usuario:</strong> usuario@recetas.com / usuario123
-              </p>
-            </div>
+          
           </div>
         </div>
       </div>
-    </div>
   );
 }
