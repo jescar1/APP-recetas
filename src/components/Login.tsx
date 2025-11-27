@@ -84,8 +84,9 @@ export function Login({ onLogin }: LoginProps) {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://app-receta.netlify.app/reset-password#/',
+        redirectTo: 'https://app-receta.netlify.app/reset-password',
       });
+      
 
       if (error) throw error;
 
