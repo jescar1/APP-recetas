@@ -231,15 +231,7 @@ export function Login({ onLogin }: LoginProps) {
                 <label htmlFor="password" className="block text-gray-700 font-medium">
                   Contraseña
                 </label>
-                {!isSignUp && (
-                  <button
-                    type="button"
-                    onClick={() => setIsForgotPassword(true)}
-                    className="text-sm text-orange-600 hover:text-orange-700 font-medium"
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </button>
-                )}
+                
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
